@@ -33,6 +33,12 @@ class RtMidiConan(ConanFile):
             self.output.warn("If it is not in conan remotes add it with 'conan remote add conan-community {}'".format(dep_remote))
             self.build_requires("{}".format(dep_pkg))
 
+    def source(self):
+        tools.replace_in_file("{}/CMakeLists.txt".format(self._rtmidi_pkg_name), "project(RtMidi LANGUAGES CXX)",
+                              '''project(RtMidi LANGUAGES CXX)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()''')
+
     def build(self):
         cmake = CMake(self)
         cmake.configure(source_dir=self._rtmidi_pkg_name)
