@@ -1,2 +1,4 @@
 # conan-rtmidi
-A conan recipe for RtMidi.
+A [conan](https://conan.io/) recipe for [RtMidi](https://github.com/thestk/rtmidi).
+***
+***
