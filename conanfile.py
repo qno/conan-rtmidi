@@ -1,6 +1,6 @@
 from conans import ConanFile, CMake, tools
 from conans.errors import ConanInvalidConfiguration
-
+import platform
 
 class RtMidiConan(ConanFile):
     name = "RtMidi"
@@ -24,6 +24,15 @@ class RtMidiConan(ConanFile):
          "url": "https://github.com/thestk/rtmidi",
          "revision": "master"
       }
+
+    def build_requirements(self):
+        if platform.system() == "Linux":
+            dep_pkg = "libalsa/1.1.5@conan/stable"
+            dep_remote = "https://api.bintray.com/conan/conan-community/conan"
+            self.output.warn("Download dependency from remote '{}'".format(dep_remote))
+            self.output.warn("If it is not in conan remotes add it with 'conan remote add conan-community {}'".format(dep_remote))
+            self.build_requires("{}".format(dep_pkg))
+
     def build(self):
         cmake = CMake(self)
         cmake.configure(source_dir=self._rtmidi_pkg_name)
