@@ -11,9 +11,13 @@ class RtMidiConan(ConanFile):
     description = "A set of C++ classes that provide a common API for realtime MIDI input/output across Linux (ALSA & JACK), Macintosh OS X (CoreMIDI & JACK) and Windows (Multimedia)."
 
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
     generators = "cmake"
+
+    options = {"shared": [True, False],
+               "fPIC": [True, False]}
+
+    default_options = {'shared': False,
+                       'fPIC': True}
 
     _rtmidi_pkg_name = "rtmidi"
     _rtmidi_libname = "rtmidi"
@@ -41,6 +45,8 @@ conan_basic_setup()''')
 
     def build(self):
         cmake = CMake(self)
+        cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = "False"
+        cmake.definitions["RTMIDI_BUILD_TESTING"] = "False"
         cmake.configure(source_dir=self._rtmidi_pkg_name)
         cmake.build()
 
