@@ -12,7 +12,7 @@ os.environ["CONAN_STABLE_BRANCH_PATTERN"]   = "stable/*"
 os.environ["CONAN_UPLOAD_ONLY_WHEN_STABLE"] = "0"
 os.environ["CONAN_DOCKER_32_IMAGES"]        = "1"
 os.environ["CONAN_CHANNEL"]                 = "testing"
-# bump ci
+
 
 def _is_static_msvc_build(build):
   if build.options["RtMidi:shared"] == True and build.settings["compiler"] != "Visual Studio":
