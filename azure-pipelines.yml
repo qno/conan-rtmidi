@@ -97,7 +97,7 @@ jobs:
         inputs:
          versionSpec: "3.7"
       - script: |
-          sudo apt install -y python3-setuptools libasound2-dev libjack-dev
+          sudo apt install -y python3-setuptools
           pip3 install --user --upgrade pip
           pip3 install --user $(conan-pkg)
           pip3 install --user $(cpt-pkg) $(bpt-pkg)
