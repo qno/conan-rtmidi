@@ -13,11 +13,8 @@ class RtMidiConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
 
-    options = {"shared": [True, False],
-               "fPIC": [True, False]}
-
-    default_options = {'shared': False,
-                       'fPIC': True}
+    options = {"shared": [True, False]}
+    default_options = "shared=False"
 
     _rtmidi_pkg_name = "rtmidi"
     _rtmidi_libname = "rtmidi"
@@ -29,23 +26,8 @@ class RtMidiConan(ConanFile):
          "revision": "master"
       }
 
-    def build_requirements(self):
-        if platform.system() == "Linux":
-            dep_pkg = "libalsa/1.1.5@conan/stable"
-            dep_remote = "https://api.bintray.com/conan/conan-community/conan"
-            self.output.warn("Download dependency from remote '{}'".format(dep_remote))
-            self.output.warn("If it is not in conan remotes add it with 'conan remote add conan-community {}'".format(dep_remote))
-            self.build_requires("{}".format(dep_pkg))
-
-    def source(self):
-        tools.replace_in_file("{}/CMakeLists.txt".format(self._rtmidi_pkg_name), "project(RtMidi LANGUAGES CXX)",
-                              '''project(RtMidi LANGUAGES CXX)
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()''')
-
     def build(self):
         cmake = CMake(self)
-        cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = "False"
         cmake.definitions["RTMIDI_BUILD_TESTING"] = "False"
         cmake.configure(source_dir=self._rtmidi_pkg_name)
         cmake.build()

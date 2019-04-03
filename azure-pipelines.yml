@@ -102,6 +102,8 @@ jobs:
           pip3 install --user $(conan-pkg)
           pip3 install --user $(cpt-pkg) $(bpt-pkg)
           conan user
+          # install alsa and jack build dependencies
+          sudo apt install -y libasound2-dev libjack-dev
           python3 build.py
         displayName: conan create package
   - job: macOS
