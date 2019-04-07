@@ -33,6 +33,7 @@ class RtMidiConan(ConanFile):
             cmake.configure(source_dir=self._rtmidi_pkg_name)
             cmake.build()
         else:
+            self.run("sh autogen.sh")
             autotools = AutoToolsBuildEnvironment(self)
             autotools.configure()
             autotools.make()
