@@ -40,4 +40,5 @@ class RtMidiConan(ConanFile):
         self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = [self._rtmidi_libname]
+        self.cpp_info.release.libs = [self._rtmidi_libname, "{}_static".format(self._rtmidi_libname)]
+        self.cpp_info.debug.libs = ["{}d".format(self._rtmidi_libname), "{}_staticd".format(self._rtmidi_libname)]
