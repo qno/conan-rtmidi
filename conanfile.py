@@ -29,6 +29,8 @@ class RtMidiConan(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.definitions["RTMIDI_BUILD_TESTING"] = "False"
+        cmake.definitions["CMAKE_CXX_FLAGS"] = "-Wno-error=deprecated-declarations -Wno-error=sign-compare]"
+        cmake.definitions["CMAKE_C_FLAGS"] = "-Wno-error=deprecated-declarations -Wno-error=sign-compare]"
         cmake.configure(source_dir=self._rtmidi_pkg_name)
         cmake.build()
 
