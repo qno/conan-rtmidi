@@ -99,10 +99,10 @@ jobs:
       - script: |
           # install alsa and jack build dependencies
           export CONAN_DOCKER_ENTRY_SCRIPT="sudo apt update -y && sudo apt install -y libasound2-dev libjack-dev"
-          sudo apt install -y python3-setuptools
-          pip3 install --user --upgrade pip
-          pip3 install --user $(conan-pkg)
-          pip3 install --user $(cpt-pkg) $(bpt-pkg)
+          #sudo apt install -y python3-setuptools
+          #pip3 install --user --upgrade pip
+          #pip3 install --user $(conan-pkg)
+          #pip3 install --user $(cpt-pkg) $(bpt-pkg)
           conan user
           python3 build.py
         displayName: conan create package
