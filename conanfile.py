@@ -1,4 +1,4 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
 from conans.errors import ConanInvalidConfiguration
 import platform
 
@@ -27,12 +27,16 @@ class RtMidiConan(ConanFile):
       }
 
     def build(self):
-        cmake = CMake(self)
-        cmake.definitions["RTMIDI_BUILD_TESTING"] = "False"
-        cmake.definitions["CMAKE_CXX_FLAGS"] = "-Wno-error=deprecated-declarations -Wno-error=sign-compare]"
-        cmake.definitions["CMAKE_C_FLAGS"] = "-Wno-error=deprecated-declarations -Wno-error=sign-compare]"
-        cmake.configure(source_dir=self._rtmidi_pkg_name)
-        cmake.build()
+        if self._isVisualStudioBuild():
+            cmake = CMake(self)
+            cmake.definitions["RTMIDI_BUILD_TESTING"] = "False"
+            cmake.configure(source_dir=self._rtmidi_pkg_name)
+            cmake.build()
+        else:
+            autotools = AutoToolsBuildEnvironment(self)
+            autotools.configure()
+            autotools.make()
+            autotools.install()
 
     def package(self):
         self.copy("*.lib", dst="lib", keep_path=False)
@@ -44,3 +48,6 @@ class RtMidiConan(ConanFile):
     def package_info(self):
         self.cpp_info.release.libs = [self._rtmidi_libname, "{}_static".format(self._rtmidi_libname)]
         self.cpp_info.debug.libs = ["{}d".format(self._rtmidi_libname), "{}_staticd".format(self._rtmidi_libname)]
+
+    def _isVisualStudioBuild(self):
+        return self.settings.os == "Windows" and self.settings.compiler == "Visual Studio"
