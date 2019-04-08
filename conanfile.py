@@ -49,11 +49,11 @@ class RtMidiConan(ConanFile):
 
     def package_info(self):
         release_libs = [self._rtmidi_libname]
-        debug_libs = ["{}d".format(self._rtmidi_libname)]
+        debug_libs = [self._rtmidi_libname]
 
         if self._isVisualStudioBuild():
             release_libs.append("{}_static".format(self._rtmidi_libname))
-            debug_libs.append("{}_staticd".format(self._rtmidi_libname))
+            debug_libs = ["{}d".format(self._rtmidi_libname), "{}_staticd".format(self._rtmidi_libname)]
 
         self.cpp_info.release.libs = release_libs
         self.cpp_info.debug.libs = debug_libs
