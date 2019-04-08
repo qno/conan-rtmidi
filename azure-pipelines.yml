@@ -130,7 +130,7 @@ jobs:
           pip install --upgrade pip
           brew update || brew update
           brew outdated pyenv || brew upgrade pyenv
-          brew install pyenv-virtualenv
+          brew install pyenv-virtualenv autoconf automake libtool pkg-config
           brew install cmake || true
           if which pyenv > /dev/null; then
             eval "$(pyenv init -)"
