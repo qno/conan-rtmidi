@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(RtMidiTest CXX)
+cmake_minimum_required (VERSION 3.5)
+project (RtMidiTest)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+include (${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_executable(rtmiditest rtmiditest.cpp)
-target_link_libraries(rtmiditest ${CONAN_LIBS})
+add_executable (rtmiditest rtmiditest.cpp)
+conan_target_link_libraries (rtmiditest)
