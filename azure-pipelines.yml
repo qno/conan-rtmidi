@@ -1,0 +1,188 @@
+trigger:
+- master
+
+variables:
+  conan-pkg: "conan"
+  cpt-pkg:  "conan_package_tools"
+  bpt-pkg: "bincrafters_package_tools"
+
+jobs:
+  - job: Linux
+    pool:
+      vmImage: Ubuntu-16.04
+    strategy:
+      matrix:
+        Gcc 4.9 x86:
+          CONAN_GCC_VERSIONS: 4.9
+          CONAN_DOCKER_IMAGE: conanio/gcc49
+          CONAN_ARCHS: "x86"
+        Gcc 4.9 x86_64:
+          CONAN_GCC_VERSIONS: 4.9
+          CONAN_DOCKER_IMAGE: conanio/gcc49
+          CONAN_ARCHS: "x86_64"
+        Gcc 5 x86:
+          CONAN_GCC_VERSIONS: 5
+          CONAN_DOCKER_IMAGE: conanio/gcc5
+          CONAN_ARCHS: "x86"
+        Gcc 5 x86_64:
+          CONAN_GCC_VERSIONS: 5
+          CONAN_DOCKER_IMAGE: conanio/gcc5
+          CONAN_ARCHS: "x86_64"
+        Gcc 6 x86:
+          CONAN_GCC_VERSIONS: 6
+          CONAN_DOCKER_IMAGE: conanio/gcc6
+          CONAN_ARCHS: "x86"
+        Gcc 6 x86_64:
+          CONAN_GCC_VERSIONS: 6
+          CONAN_DOCKER_IMAGE: conanio/gcc6
+          CONAN_ARCHS: "x86_64"
+        Gcc 7 x86:
+          CONAN_GCC_VERSIONS: 7
+          CONAN_DOCKER_IMAGE: conanio/gcc7
+          CONAN_ARCHS: "x86"
+        Gcc 7 x86_64:
+          CONAN_GCC_VERSIONS: 7
+          CONAN_DOCKER_IMAGE: conanio/gcc7
+          CONAN_ARCHS: "x86_64"
+        Gcc 8 x86:
+          CONAN_GCC_VERSIONS: 8
+          CONAN_DOCKER_IMAGE: conanio/gcc8
+          CONAN_ARCHS: "x86"
+        Gcc 8 x86_64:
+          CONAN_GCC_VERSIONS: 8
+          CONAN_DOCKER_IMAGE: conanio/gcc8
+          CONAN_ARCHS: "x86_64"
+        Clang 3.9 x86:
+          CONAN_CLANG_VERSIONS: 3.9
+          CONAN_DOCKER_IMAGE: conanio/clang39
+          CONAN_ARCHS: "x86"
+        Clang 3.9 x86_64:
+          CONAN_CLANG_VERSIONS: 3.9
+          CONAN_DOCKER_IMAGE: conanio/clang39
+          CONAN_ARCHS: "x86_64"
+        Clang 4.0 x86:
+          CONAN_CLANG_VERSIONS: 4.0
+          CONAN_DOCKER_IMAGE: conanio/clang40
+          CONAN_ARCHS: "x86"
+        Clang 4.0 x86_64:
+          CONAN_CLANG_VERSIONS: 4.0
+          CONAN_DOCKER_IMAGE: conanio/clang40
+          CONAN_ARCHS: "x86_64"
+        Clang 5.0 x86:
+          CONAN_CLANG_VERSIONS: 5.0
+          CONAN_DOCKER_IMAGE: conanio/clang50
+          CONAN_ARCHS: "x86"
+        Clang 5.0 x86_64:
+          CONAN_CLANG_VERSIONS: 5.0
+          CONAN_DOCKER_IMAGE: conanio/clang50
+          CONAN_ARCHS: "x86_64"
+        Clang 6.0 x86:
+          CONAN_CLANG_VERSIONS: 6.0
+          CONAN_DOCKER_IMAGE: conanio/clang60
+          CONAN_ARCHS: "x86"
+        Clang 6.0 x86_64:
+          CONAN_CLANG_VERSIONS: 6.0
+          CONAN_DOCKER_IMAGE: conanio/clang60
+          CONAN_ARCHS: "x86_64"
+        Clang 7.0 x86:
+          CONAN_CLANG_VERSIONS: 7.0
+          CONAN_DOCKER_IMAGE: conanio/clang7
+          CONAN_ARCHS: "x86"
+        Clang 7.0 x86_64:
+          CONAN_CLANG_VERSIONS: 7.0
+          CONAN_DOCKER_IMAGE: conanio/clang7
+          CONAN_ARCHS: "x86_64"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+         versionSpec: "3.7"
+      - script: |
+          # install alsa and jack build dependencies
+          export CONAN_DOCKER_ENTRY_SCRIPT="sudo apt update -y && sudo apt install -y libasound2-dev libjack-dev"
+          sudo apt install -y python3-setuptools
+          pip3 install --user --upgrade pip
+          pip3 install --user $(conan-pkg)
+          pip3 install --user $(cpt-pkg) $(bpt-pkg)
+          conan user
+          python3 build.py
+        displayName: conan create package
+  - job: macOS
+    pool:
+      vmImage: xcode9-macos10.13
+    strategy:
+      matrix:
+        # Xcode Version overview: https://gist.github.com/yamaya/2924292
+        # available versions: https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md
+        Apple Clang 8.1:
+          CONAN_APPLE_CLANG_VERSIONS: 8.1
+          XCODE_VERSION: 8.3.3
+        Apple Clang 9.0:
+          CONAN_APPLE_CLANG_VERSIONS: 9.0
+          XCODE_VERSION: 9.2
+        Apple Clang 9.1:
+          CONAN_APPLE_CLANG_VERSIONS: 9.1
+          XCODE_VERSION: 9.4.1
+        Apple Clang 10.0:
+          CONAN_APPLE_CLANG_VERSIONS: 10.0
+          XCODE_VERSION: 10.1
+    steps:
+      - script: |
+          /bin/bash -c "sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer"
+          export PATH=$PATH:$HOME/.local/bin
+          pip3 install --upgrade pip
+          brew update || brew update
+          brew install autoconf automake libtool pkg-config
+          brew install cmake || true
+
+          pip install --upgrade $(conan-pkg)
+          pip3 install $(cpt-pkg) $(bpt-pkg)
+          conan user
+
+          python3 build.py
+        displayName: conan create package
+  - job: Windows2012
+    pool:
+      vmImage: vs2015-win2012r2
+    strategy:
+      matrix:
+        VStudio 2015 Release:
+          CONAN_VISUAL_VERSIONS: 14
+          CONAN_BUILD_TYPES: Release
+        VStudio 2015 Debug:
+          CONAN_VISUAL_VERSIONS: 14
+          CONAN_BUILD_TYPES: Debug
+    steps:
+      - powershell: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+          choco install -y python
+        displayName: install python 3
+      - script: |
+          set PYTHON_HOME=C:\Python37
+          set PATH=%PYTHON_HOME%\Scripts;%PATH%
+          %PYTHON_HOME%/python -m pip install --upgrade pip
+          %PYTHON_HOME%/python -m pip install $(conan-pkg)
+          %PYTHON_HOME%/python -m pip install $(cpt-pkg) $(bpt-pkg)
+          conan user
+          %PYTHON_HOME%/python build.py
+        displayName: conan create package
+  - job: Windows2016
+    pool:
+      vmImage: vs2017-win2016
+    strategy:
+      matrix:
+        VStudio 2017 Release:
+          CONAN_VISUAL_VERSIONS: 15
+          CONAN_BUILD_TYPES: Release
+        VStudio 2017 Debug:
+          CONAN_VISUAL_VERSIONS: 15
+          CONAN_BUILD_TYPES: Debug
+    steps:
+      - script: |
+          set PATH=%PYTHON_HOME%\Scripts;%PATH%
+          :: need to add PYTHON_HOME as there is a conflicting chocolatey installed python which is somehow prefered in PATH
+          %PYTHON_HOME%/python -m pip install --upgrade pip
+          %PYTHON_HOME%/python -m pip install $(conan-pkg)
+          %PYTHON_HOME%/python -m pip install $(cpt-pkg) $(bpt-pkg)
+          conan user
+          %PYTHON_HOME%/python build.py
+        displayName: conan create package
