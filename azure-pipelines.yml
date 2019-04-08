@@ -111,18 +111,20 @@ jobs:
       vmImage: xcode9-macos10.13
     strategy:
       matrix:
-        Clang 8.1:
+        # Xcode Version overview: https://gist.github.com/yamaya/2924292
+        # available versions: https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md
+        Apple Clang 8.1:
           CONAN_APPLE_CLANG_VERSIONS: 8.1
           XCODE_VERSION: 8.3.3
-        Clang 9.0:
+        Apple Clang 9.0:
           CONAN_APPLE_CLANG_VERSIONS: 9.0
           XCODE_VERSION: 9.2
-        Clang 9.1:
+        Apple Clang 9.1:
           CONAN_APPLE_CLANG_VERSIONS: 9.1
           XCODE_VERSION: 9.4.1
-        Clang 10.0:
+        Apple Clang 10.0:
           CONAN_APPLE_CLANG_VERSIONS: 10.0
-          XCODE_VERSION: 10
+          XCODE_VERSION: 10.1
     steps:
       - script: |
           /bin/bash -c "sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer"
