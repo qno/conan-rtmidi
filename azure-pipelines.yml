@@ -2,6 +2,7 @@ trigger:
 - master
 
 variables:
+  python-version: "3.7"
   conan-pkg: "conan"
   cpt-pkg:  "conan_package_tools"
   bpt-pkg: "bincrafters_package_tools"
@@ -95,16 +96,16 @@ jobs:
     steps:
       - task: UsePythonVersion@0
         inputs:
-         versionSpec: "3.7"
+         versionSpec: $(python-version)
       - script: |
           # install alsa and jack build dependencies
           export CONAN_DOCKER_ENTRY_SCRIPT="sudo apt update -y && sudo apt install -y libasound2-dev libjack-dev"
           sudo apt install -y python3-setuptools
-          pip3 install --user --upgrade pip
-          pip3 install --user $(conan-pkg)
-          pip3 install --user $(cpt-pkg) $(bpt-pkg)
+          pip install --user --upgrade pip
+          pip install --user $(conan-pkg)
+          pip install --user $(cpt-pkg) $(bpt-pkg)
           conan user
-          python3 build.py
+          python build.py
         displayName: conan create package
   - job: macOS
     pool:
@@ -126,25 +127,34 @@ jobs:
           CONAN_APPLE_CLANG_VERSIONS: 10.0
           XCODE_VERSION: 10.1
     steps:
+      - task: UsePythonVersion@0
+        inputs:
+         versionSpec: $(python-version)
       - script: |
           /bin/bash -c "sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer"
           export PATH=$PATH:$HOME/.local/bin
-          pip3 install --upgrade pip
+          pip install --upgrade pip
           brew update || brew update
           brew install autoconf automake libtool pkg-config
           brew install cmake || true
 
           pip install --upgrade $(conan-pkg)
-          pip3 install $(cpt-pkg) $(bpt-pkg)
+          pip install $(cpt-pkg) $(bpt-pkg)
           conan user
 
-          python3 build.py
+          python build.py
         displayName: conan create package
   - job: Windows2012
     pool:
       vmImage: vs2015-win2012r2
     strategy:
       matrix:
+        VStudio 2013 Release:
+          CONAN_VISUAL_VERSIONS: 12
+          CONAN_BUILD_TYPES: Release
+        VStudio 2013 Debug:
+          CONAN_VISUAL_VERSIONS: 12
+          CONAN_BUILD_TYPES: Debug
         VStudio 2015 Release:
           CONAN_VISUAL_VERSIONS: 14
           CONAN_BUILD_TYPES: Release
@@ -177,12 +187,13 @@ jobs:
           CONAN_VISUAL_VERSIONS: 15
           CONAN_BUILD_TYPES: Debug
     steps:
+      - task: UsePythonVersion@0
+        inputs:
+         versionSpec: $(python-version)
       - script: |
-          set PATH=%PYTHON_HOME%\Scripts;%PATH%
-          :: need to add PYTHON_HOME as there is a conflicting chocolatey installed python which is somehow prefered in PATH
-          %PYTHON_HOME%/python -m pip install --upgrade pip
-          %PYTHON_HOME%/python -m pip install $(conan-pkg)
-          %PYTHON_HOME%/python -m pip install $(cpt-pkg) $(bpt-pkg)
+          python -m pip install --upgrade pip
+          python -m pip install $(conan-pkg)
+          python -m pip install $(cpt-pkg) $(bpt-pkg)
           conan user
-          %PYTHON_HOME%/python build.py
+          python build.py
         displayName: conan create package
