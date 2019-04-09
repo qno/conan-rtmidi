@@ -156,15 +156,18 @@ jobs:
           CONAN_VISUAL_VERSIONS: 14
           CONAN_BUILD_TYPES: Debug
     steps:
-      - task: UsePythonVersion@0
-        inputs:
-         versionSpec: $(python-version)
+      - powershell: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+          choco install -y python
+        displayName: install python 3
       - script: |
-          python -m pip install --upgrade pip
-          python -m pip install $(conan-pkg)
-          python -m pip install $(cpt-pkg) $(bpt-pkg)
+          set PYTHON_HOME=C:\Python37
+          set PATH=%PYTHON_HOME%\Scripts;%PATH%
+          %PYTHON_HOME%/python -m pip install --upgrade pip
+          %PYTHON_HOME%/python -m pip install $(conan-pkg)
+          %PYTHON_HOME%/python -m pip install $(cpt-pkg) $(bpt-pkg)
           conan user
-          python build.py
+          %PYTHON_HOME%/python build.py
         displayName: conan create package
   - job: Windows2016
     pool:
