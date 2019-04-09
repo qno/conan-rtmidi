@@ -149,6 +149,24 @@ jobs:
       vmImage: vs2015-win2012r2
     strategy:
       matrix:
+        VStudio 2010 Release:
+          CONAN_VISUAL_VERSIONS: 10
+          CONAN_BUILD_TYPES: Release
+        VStudio 2010 Debug:
+          CONAN_VISUAL_VERSIONS: 10
+          CONAN_BUILD_TYPES: Debug
+        VStudio 2012 Release:
+          CONAN_VISUAL_VERSIONS: 11
+          CONAN_BUILD_TYPES: Release
+        VStudio 2012 Debug:
+          CONAN_VISUAL_VERSIONS: 11
+          CONAN_BUILD_TYPES: Debug
+        VStudio 2013 Release:
+          CONAN_VISUAL_VERSIONS: 12
+          CONAN_BUILD_TYPES: Release
+        VStudio 2013 Debug:
+          CONAN_VISUAL_VERSIONS: 12
+          CONAN_BUILD_TYPES: Debug
         VStudio 2015 Release:
           CONAN_VISUAL_VERSIONS: 14
           CONAN_BUILD_TYPES: Release
