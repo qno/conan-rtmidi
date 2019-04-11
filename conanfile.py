@@ -58,9 +58,9 @@ class RtMidiConan(ConanFile):
 
         if self._isVisualStudioBuild():
             if not self.options.shared:
-               release_libs = ["{}_static".format(self._rtmidi_libname)]
-               debug_libs = ["{}_staticd".format(self._rtmidi_libname)]
-               self.cpp_info.libs = ["winmm"]
+                release_libs = ["{}_static".format(self._rtmidi_libname)]
+                debug_libs = ["{}_staticd".format(self._rtmidi_libname)]
+                self.cpp_info.libs = ["winmm"]
             else:
                 debug_libs = ["{}d".format(self._rtmidi_libname)]
 
