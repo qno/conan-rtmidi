@@ -29,7 +29,12 @@ class RtMidiConan(ConanFile):
     def build(self):
         if self._isVisualStudioBuild():
             cmake = CMake(self)
-            cmake.definitions["RTMIDI_BUILD_TESTING"] = "False"
+            cmake.definitions["RTMIDI_BUILD_TESTING"] = False
+            if self.options.shared:
+                cmake.definitions["RTMIDI_BUILD_STATIC_LIBS"] = False
+            else:
+                cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = False
+
             cmake.configure(source_dir=self._rtmidi_pkg_name)
             cmake.build()
         else:
@@ -52,11 +57,16 @@ class RtMidiConan(ConanFile):
         debug_libs = [self._rtmidi_libname]
 
         if self._isVisualStudioBuild():
-            release_libs.append("{}_static".format(self._rtmidi_libname))
-            debug_libs = ["{}d".format(self._rtmidi_libname), "{}_staticd".format(self._rtmidi_libname)]
+            if not self.options.shared:
+               release_libs = ["{}_static".format(self._rtmidi_libname)]
+               debug_libs = ["{}_staticd".format(self._rtmidi_libname)]
+               self.cpp_info.libs = ["winmm"]
+            else:
+                debug_libs = ["{}d".format(self._rtmidi_libname)]
 
         self.cpp_info.release.libs = release_libs
         self.cpp_info.debug.libs = debug_libs
+
 
     def _isVisualStudioBuild(self):
         return self.settings.os == "Windows" and self.settings.compiler == "Visual Studio"
