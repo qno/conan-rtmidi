@@ -81,7 +81,7 @@ class RtMidiConan(ConanFile):
         cmake_project_line = ""
         cmake_file = "{}{}CMakeLists.txt".format(src_dir, os.sep)
         for line in open(cmake_file, "r", encoding="utf8"):
-            if re.match("^PROJECT.*\(.*\).*", line.strip().upper()):
+            if re.match("^PROJECT.*\\(.*\\).*", line.strip().upper()):
                 cmake_project_line = line
                 break
         self.output.warn("patch '{}' to inject conanbuildinfo".format(cmake_file))
