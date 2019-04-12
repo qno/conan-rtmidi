@@ -26,8 +26,8 @@ class RtMidiConan(ConanFile):
       }
 
     def source(self):
-        # the conan_basic_setup() must be called, otherwise the compiler runtime will not setup correct which
-        # leads then to linker errors if recipe e.g. is build with /MT runtime for MS compiler
+        # the conan_basic_setup() must be called, otherwise the compiler runtime settings won't be setup correct,
+        # which then leads then to linker errors if recipe e.g. is build with /MT runtime for MS compiler
         # see https://github.com/conan-io/conan/issues/3312
         self._patchCMakeListsFile(self._rtmidi_pkg_name)
 
