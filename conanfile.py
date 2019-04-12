@@ -1,6 +1,6 @@
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
 from conans.errors import ConanInvalidConfiguration
-import platform , re, os
+import re, os
 
 class RtMidiConan(ConanFile):
     name = "RtMidi"
@@ -77,11 +77,11 @@ class RtMidiConan(ConanFile):
     def _isVisualStudioBuild(self):
         return self.settings.os == "Windows" and self.settings.compiler == "Visual Studio"
 
-    def _patchCMakeListsFile(self, dir):
+    def _patchCMakeListsFile(self, src_dir):
         cmake_project_line = ""
-        cmake_file = "{}{}CMakeLists.txt".format(dir, os.sep)
+        cmake_file = "{}{}CMakeLists.txt".format(src_dir, os.sep)
         for line in open(cmake_file, "r", encoding="utf8"):
-            if re.match("^PROJECT.*\(.*", line.strip().upper()):
+            if re.match("^PROJECT.*\(.*\).*", line.strip().upper()):
                 cmake_project_line = line
                 break
         self.output.warn("patch '{}' to inject conanbuildinfo".format(cmake_file))
