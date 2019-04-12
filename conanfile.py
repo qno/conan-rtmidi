@@ -1,6 +1,6 @@
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
 from conans.errors import ConanInvalidConfiguration
-import platform
+import platform , re, os
 
 class RtMidiConan(ConanFile):
     name = "RtMidi"
@@ -27,10 +27,10 @@ class RtMidiConan(ConanFile):
       }
 
     def source(self):
-        tools.replace_in_file("rtmidi/CMakeLists.txt", "project(RtMidi LANGUAGES CXX)",
-                              '''project(RtMidi LANGUAGES CXX)
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()''')
+        # the conan_basic_setup() must be called, otherwise the compiler runtime will not setup correct which
+        # leads then to linker errors if recipe e.g. is build with /MT runtime for MS compiler
+        # see https://github.com/conan-io/conan/issues/3312
+        self._patchCMakeListsFile(self._rtmidi_libname)
 
     def build(self):
         if self._isVisualStudioBuild():
@@ -76,3 +76,16 @@ conan_basic_setup()''')
 
     def _isVisualStudioBuild(self):
         return self.settings.os == "Windows" and self.settings.compiler == "Visual Studio"
+
+    def _patchCMakeListsFile(self, dir):
+        cmake_project_line = ""
+        cmake_file = "{}{}CMakeLists.txt".format(dir, os.sep)
+        for line in open(cmake_file, "r", encoding="utf8"):
+            if re.match("^PROJECT.*\(.*", line.strip().upper()):
+                cmake_project_line = line
+                break
+        self.output.warn("patch '{}' to inject conanbuildinfo".format(cmake_file))
+        tools.replace_in_file(cmake_file, "{}".format(cmake_project_line),
+                              '''{}
+include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
+conan_basic_setup()'''.format(cmake_project_line))
