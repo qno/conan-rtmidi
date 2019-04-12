@@ -84,7 +84,12 @@ class RtMidiConan(ConanFile):
                 cmake_project_line = line
                 break
         self.output.warn("patch '{}' to inject conanbuildinfo".format(cmake_file))
-        tools.replace_in_file(cmake_file, "{}".format(cmake_project_line),
-                              '''{}
-include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
-conan_basic_setup()'''.format(cmake_project_line))
+#        tools.replace_in_file(cmake_file, "{}".format(cmake_project_line),
+#                              '''{}
+#include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
+#conan_basic_setup()'''.format(cmake_project_line))
+
+        tools.replace_in_file(cmake_file, "project(RtMidi LANGUAGES CXX)",
+                              '''project(RtMidi LANGUAGES CXX)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()''')
