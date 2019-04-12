@@ -26,6 +26,12 @@ class RtMidiConan(ConanFile):
          "revision": "master"
       }
 
+    def source(self):
+        tools.replace_in_file("rtmidi/CMakeLists.txt", "project(RtMidi LANGUAGES CXX)",
+                              '''project(RtMidi LANGUAGES CXX)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()''')
+
     def build(self):
         if self._isVisualStudioBuild():
             cmake = CMake(self)
