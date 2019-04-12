@@ -29,7 +29,7 @@ class RtMidiConan(ConanFile):
         # the conan_basic_setup() must be called, otherwise the compiler runtime will not setup correct which
         # leads then to linker errors if recipe e.g. is build with /MT runtime for MS compiler
         # see https://github.com/conan-io/conan/issues/3312
-        self._patchCMakeListsFile(self._rtmidi_libname)
+        self._patchCMakeListsFile(self._rtmidi_pkg_name)
 
     def build(self):
         if self._isVisualStudioBuild():
