@@ -79,17 +79,14 @@ class RtMidiConan(ConanFile):
     def _patchCMakeListsFile(self, src_dir):
         cmake_project_line = ""
         cmake_file = "{}{}CMakeLists.txt".format(src_dir, os.sep)
+        self.output.warn("patch '{}' to inject conanbuildinfo".format(cmake_file))
         for line in open(cmake_file, "r", encoding="utf8"):
             if re.match("^PROJECT.*\\(.*\\).*", line.strip().upper()):
-                cmake_project_line = line
+                cmake_project_line = line.strip()
+                self.output.warn(F"found cmake project declaration '{cmake_project_line}'")
                 break
-        self.output.warn("patch '{}' to inject conanbuildinfo".format(cmake_file))
-#        tools.replace_in_file(cmake_file, "{}".format(cmake_project_line),
-#                              '''{}
-#include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
-#conan_basic_setup()'''.format(cmake_project_line))
 
-        tools.replace_in_file(cmake_file, "project(RtMidi LANGUAGES CXX)",
-                              '''project(RtMidi LANGUAGES CXX)
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()''')
+        tools.replace_in_file(cmake_file, "{}".format(cmake_project_line),
+                              '''{}
+include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
+conan_basic_setup()'''.format(cmake_project_line))
