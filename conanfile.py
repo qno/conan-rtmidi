@@ -1,9 +1,9 @@
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
-import re, os
+import re, os, platform
 
 class RtMidiConan(ConanFile):
     name = "RtMidi"
-    version = "master"
+    version = "4.0.0"
     license = "MIT"
     author = "Gary P. Scavone"
     url = "https://github.com/qno/conan-rtmidi"
@@ -15,42 +15,39 @@ class RtMidiConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
 
-    _rtmidi_pkg_name = "rtmidi"
-    _rtmidi_libname = "rtmidi"
-
-    scm = {
-         "type": "git",
-         "subfolder": _rtmidi_libname,
-         "url": "https://github.com/thestk/rtmidi",
-         "revision": "master"
-      }
+    _pkg_name = "rtmidi-4.0.0"
+    _libname = "rtmidi"
 
     def source(self):
+        url = "http://www.music.mcgill.ca/~gary/rtmidi/release/{}.tar.gz".format(self._pkg_name)
+        self.output.info("Downloading {}".format(url))
+        tools.get(url)
         # the conan_basic_setup() must be called, otherwise the compiler runtime settings won't be setup correct,
         # which then leads then to linker errors if recipe e.g. is build with /MT runtime for MS compiler
         # see https://github.com/conan-io/conan/issues/3312
-        self._patchCMakeListsFile(self._rtmidi_pkg_name)
+        self._patchCMakeListsFile(self._pkg_name)
 
     def build(self):
         if self._isVisualStudioBuild():
             cmake = CMake(self)
+            if self.settings.build_type == "Debug":
+                cmake.definitions["CMAKE_DEBUG_POSTFIX"] = "d"
             cmake.definitions["RTMIDI_BUILD_TESTING"] = False
             if self.options.shared:
                 cmake.definitions["RTMIDI_BUILD_STATIC_LIBS"] = False
             else:
                 cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = False
 
-            cmake.configure(source_dir=self._rtmidi_pkg_name)
+            cmake.configure(source_dir=self._pkg_name)
             cmake.build()
         else:
-            self.run("cd {} && sh autogen.sh --no-configure && cd ..".format(self._rtmidi_pkg_name))
             autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(configure_dir=self._rtmidi_pkg_name)
+            autotools.configure(configure_dir=self._pkg_name)
             autotools.make()
             autotools.install()
 
     def package(self):
-        self.copy("RtMidi.h", dst="include", src=self._rtmidi_pkg_name)
+        self.copy("RtMidi.h", dst="include", src=self._pkg_name)
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="lib", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
@@ -58,20 +55,16 @@ class RtMidiConan(ConanFile):
         self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
-        release_libs = [self._rtmidi_libname]
-        debug_libs = [self._rtmidi_libname]
+        release_libs = [self._libname]
+        debug_libs = [self._libname]
 
         if self._isVisualStudioBuild():
+            debug_libs = ["{}d".format(self._libname)]
             if not self.options.shared:
-                release_libs = ["{}_static".format(self._rtmidi_libname)]
-                debug_libs = ["{}_staticd".format(self._rtmidi_libname)]
                 self.cpp_info.libs = ["winmm"]
-            else:
-                debug_libs = ["{}d".format(self._rtmidi_libname)]
 
         self.cpp_info.release.libs = release_libs
         self.cpp_info.debug.libs = debug_libs
-
 
     def _isVisualStudioBuild(self):
         return self.settings.os == "Windows" and self.settings.compiler == "Visual Studio"
@@ -83,10 +76,15 @@ class RtMidiConan(ConanFile):
         for line in open(cmake_file, "r", encoding="utf8"):
             if re.match("^PROJECT.*\\(.*\\).*", line.strip().upper()):
                 cmake_project_line = line.strip()
-                self.output.warn(F"found cmake project declaration '{cmake_project_line}'")
+                self.output.warn("found cmake project declaration '{}'".format(cmake_project_line))
                 break
 
         tools.replace_in_file(cmake_file, "{}".format(cmake_project_line),
                               '''{}
 include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
 conan_basic_setup()'''.format(cmake_project_line))
+
+        if platform.platform().startswith("Windows-2012"):
+            self.output.warn("set minimum required CMake version back to 3.7 on {} build server".format(platform.platform()))
+            tools.replace_in_file(cmake_file, "cmake_minimum_required(VERSION 3.10 FATAL_ERROR)",
+                "cmake_minimum_required(VERSION 3.7 FATAL_ERROR)")
