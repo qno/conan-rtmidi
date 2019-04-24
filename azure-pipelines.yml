@@ -108,13 +108,13 @@ jobs:
           conan user
           python build.py
         displayName: conan create package
-  - job: macOS
+  - job: macOS1013
     pool:
-      vmImage: xcode9-macos10.13
+      vmImage: macOS-10.13
     strategy:
       matrix:
         # Xcode Version overview: https://gist.github.com/yamaya/2924292
-        # available versions: https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md
+        # available versions: https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.13-Readme.md
         Apple Clang 8.1:
           CONAN_APPLE_CLANG_VERSIONS: 8.1
           XCODE_VERSION: 8.3.3
@@ -124,9 +124,6 @@ jobs:
         Apple Clang 9.1:
           CONAN_APPLE_CLANG_VERSIONS: 9.1
           XCODE_VERSION: 9.4.1
-        Apple Clang 10.0:
-          CONAN_APPLE_CLANG_VERSIONS: 10.0
-          XCODE_VERSION: 10.1
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -138,11 +135,38 @@ jobs:
           brew update || brew update
           brew install autoconf automake libtool pkg-config
           brew install cmake || true
-
           pip install --upgrade $(conan-pkg)
           pip install $(cpt-pkg) $(bpt-pkg)
           conan user
-
+          python build.py
+        displayName: conan create package
+  - job: macOS1014
+    pool:
+      vmImage: macOS-10.14
+    strategy:
+      matrix:
+        # Xcode Version overview: https://gist.github.com/yamaya/2924292
+        # available versions: https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md
+        Apple Clang 10.0:
+          CONAN_APPLE_CLANG_VERSIONS: 10.0
+          XCODE_VERSION: 10.1
+        Apple Clang 10.0.1:
+          CONAN_APPLE_CLANG_VERSIONS: 10.0
+          XCODE_VERSION: 10.2
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+         versionSpec: $(python-version)
+      - script: |
+          /bin/bash -c "sudo xcode-select -s /Applications/Xcode_$(XCODE_VERSION).app/Contents/Developer"
+          export PATH=$PATH:$HOME/.local/bin
+          pip install --upgrade pip
+          brew update || brew update
+          brew install autoconf automake libtool pkg-config
+          brew install cmake || true
+          pip install --upgrade $(conan-pkg)
+          pip install $(cpt-pkg) $(bpt-pkg)
+          conan user
           python build.py
         displayName: conan create package
   - job: Windows2012
