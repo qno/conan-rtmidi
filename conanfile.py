@@ -1,4 +1,5 @@
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
+from conans.client.tools.pkg_config import PkgConfig
 import re, os, platform
 
 class RtMidiConan(ConanFile):
@@ -17,6 +18,40 @@ class RtMidiConan(ConanFile):
 
     _pkg_name = "rtmidi-4.0.0"
     _libname = "rtmidi"
+
+    def system_requirements(self):
+        if tools.os_info.is_linux:
+            if tools.os_info.with_apt:
+                installer = tools.SystemPackageTool()
+                if self.settings.arch == "x86" and tools.detected_architecture() == "x86_64":
+                    arch_suffix = ':i386'
+                    installer.install("g++-multilib")
+                else:
+                    arch_suffix = ''
+                installer.install("{}{}".format("libasound2-dev", arch_suffix))
+                installer.install("{}{}".format("libjack-dev", arch_suffix))
+            elif tools.os_info.with_yum:
+                installer = tools.SystemPackageTool()
+                if self.settings.arch == "x86" and tools.detected_architecture() == "x86_64":
+                    arch_suffix = '.i686'
+                else:
+                    arch_suffix = ''
+                installer.install("{}{}".format("alsa-lib-devel", arch_suffix))
+                installer.install("{}{}".format("jack-audio-connection-kit-devel", arch_suffix))
+            elif tools.os_info.with_pacman:
+                if self.settings.arch == "x86" and tools.detected_architecture() == "x86_64":
+                    # Note: The packages with the "lib32-" prefix will only be
+                    # available if the user has activate Arch's multilib
+                    # repository, See
+                    # https://wiki.archlinux.org/index.php/official_repositories#multilib
+                    arch_suffix = 'lib32-'
+                else:
+                    arch_suffix = ''
+                installer = tools.SystemPackageTool()
+                installer.install("{}{}".format(arch_suffix, "alsa-lib"))
+                installer.install("{}{}".format(arch_suffix, "jack2"))
+            else:
+                self.output.warn("Could not determine package manager, skipping Linux system requirements installation.")
 
     def source(self):
         url = "http://www.music.mcgill.ca/~gary/rtmidi/release/{}.tar.gz".format(self._pkg_name)
@@ -57,6 +92,17 @@ class RtMidiConan(ConanFile):
     def package_info(self):
         release_libs = [self._libname]
         debug_libs = [self._libname]
+
+        # Note: this must be correctly refined with options added for selecting
+        if self.settings.os == "Linux":
+            self.cpp_info.libs = ["asound", "pthread"]
+
+            pkg_config = PkgConfig("jack")
+            for lib in pkg_config.libs_only_l:
+                self.cpp_info.libs.append(lib[2:])
+
+        if self.settings.os == "Macos":
+            self.cpp_info.exelinkflags.append("-framework CoreMIDI -framework CoreAudio -framework CoreFoundation")
 
         if self._isVisualStudioBuild():
             debug_libs = ["{}d".format(self._libname)]
