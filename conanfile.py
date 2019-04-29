@@ -1,4 +1,5 @@
 from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
+from conans.client.tools.pkg_config import PkgConfig
 import re, os, platform
 
 class RtMidiConan(ConanFile):
@@ -91,6 +92,17 @@ class RtMidiConan(ConanFile):
     def package_info(self):
         release_libs = [self._libname]
         debug_libs = [self._libname]
+
+        # Note: this must be correctly refined with options added for selecting
+        if self.settings.os == "Linux":
+            self.cpp_info.libs = ["asound", "pthread"]
+
+            pkg_config = PkgConfig("jack")
+            for lib in pkg_config.libs_only_l:
+                self.cpp_info.libs.append(lib[2:])
+
+        if self.settings.os == "Macos":
+            self.cpp_info.exelinkflags.append("-framework CoreMIDI -framework CoreAudio -framework CoreFoundation")
 
         if self._isVisualStudioBuild():
             debug_libs = ["{}d".format(self._libname)]
