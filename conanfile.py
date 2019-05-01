@@ -82,7 +82,7 @@ class RtMidiConan(ConanFile):
             autotools.install()
 
     def package(self):
-        self.copy("RtMidi.h", dst="include", src=self._pkg_name)
+        self.copy("*.h", dst="include/rtmidi", excludes="contrib", src=self._pkg_name)
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="lib", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
