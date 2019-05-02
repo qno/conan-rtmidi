@@ -22,6 +22,6 @@ def _is_static_msvc_build(build):
 
 
 if __name__ == "__main__":
-  builder = build_template_default.get_builder()
+  builder = build_template_default.get_builder(pure_c=False)
   builder.builds = filter(_is_static_msvc_build , builder.items)
   builder.run()
