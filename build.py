@@ -14,14 +14,6 @@ os.environ["CONAN_DOCKER_32_IMAGES"]        = "1"
 os.environ["CONAN_CHANNEL"]                 = "testing"
 
 
-def _is_static_msvc_build(build):
-  if build.options["RtMidi:shared"] == True and build.settings["compiler"] != "Visual Studio":
-    return False
-  else:
-    return True
-
-
 if __name__ == "__main__":
   builder = build_template_default.get_builder(pure_c=False)
-  builder.builds = filter(_is_static_msvc_build , builder.items)
   builder.run()
