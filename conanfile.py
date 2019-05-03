@@ -14,7 +14,7 @@ class RtMidiConan(ConanFile):
     generators = "cmake"
 
     options = {"shared": [True, False]}
-    default_options = "shared=False"
+    default_options = {"shared": False}
 
     _pkg_name = "rtmidi-4.0.0"
     _libname = "rtmidi"
