@@ -1,5 +1,4 @@
-from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
-from conans.client.tools.pkg_config import PkgConfig
+from conans import ConanFile, CMake, tools
 import re, os, platform
 
 class RtMidiConan(ConanFile):
@@ -63,29 +62,25 @@ class RtMidiConan(ConanFile):
         self._patchCMakeListsFile(self._pkg_name)
 
     def build(self):
+        cmake = CMake(self)
         if self._isVisualStudioBuild():
-            cmake = CMake(self)
             if self.settings.build_type == "Debug":
                 cmake.definitions["CMAKE_DEBUG_POSTFIX"] = "d"
-            cmake.definitions["RTMIDI_BUILD_TESTING"] = False
-            if self.options.shared:
-                cmake.definitions["RTMIDI_BUILD_STATIC_LIBS"] = False
-            else:
-                cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = False
 
-            cmake.configure(source_dir=self._pkg_name)
-            cmake.build()
+        cmake.definitions["RTMIDI_BUILD_TESTING"] = False
+        if self.options.shared:
+            cmake.definitions["RTMIDI_BUILD_STATIC_LIBS"] = False
         else:
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(configure_dir=self._pkg_name)
-            autotools.make()
-            autotools.install()
+            cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = False
+
+        cmake.configure(source_dir=self._pkg_name)
+        cmake.build()
 
     def package(self):
         self.copy("*.h", dst="include/rtmidi", excludes="contrib", src=self._pkg_name)
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="lib", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
+        self.copy("*.so*", dst="lib", keep_path=False)
         self.copy("*.dylib", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
 
