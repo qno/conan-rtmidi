@@ -125,6 +125,10 @@ class RtMidiConan(ConanFile):
 include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
 conan_basic_setup()'''.format(cmake_project_line))
 
+        self.output.warn("remove -Werror flag for Debug builds with gcc, otherwise x86 builds will fail")
+        tools.replace_in_file(cmake_file, "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -Werror\")",
+            "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")")
+
         if platform.platform().startswith("Windows-2012"):
             self.output.warn("set minimum required CMake version back to 3.7 on {} build server".format(platform.platform()))
             tools.replace_in_file(cmake_file, "cmake_minimum_required(VERSION 3.10 FATAL_ERROR)",
