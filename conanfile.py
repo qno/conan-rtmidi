@@ -1,5 +1,4 @@
-from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
-from conans.client.tools.pkg_config import PkgConfig
+from conans import ConanFile, CMake, tools
 import re, os, platform
 
 class RtMidiConan(ConanFile):
@@ -63,43 +62,36 @@ class RtMidiConan(ConanFile):
         self._patchCMakeListsFile(self._pkg_name)
 
     def build(self):
+        cmake = CMake(self)
         if self._isVisualStudioBuild():
-            cmake = CMake(self)
             if self.settings.build_type == "Debug":
                 cmake.definitions["CMAKE_DEBUG_POSTFIX"] = "d"
-            cmake.definitions["RTMIDI_BUILD_TESTING"] = False
-            if self.options.shared:
-                cmake.definitions["RTMIDI_BUILD_STATIC_LIBS"] = False
-            else:
-                cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = False
 
-            cmake.configure(source_dir=self._pkg_name)
-            cmake.build()
+        cmake.definitions["RTMIDI_BUILD_TESTING"] = False
+        if self.options.shared:
+            cmake.definitions["RTMIDI_BUILD_STATIC_LIBS"] = False
         else:
-            autotools = AutoToolsBuildEnvironment(self)
-            autotools.configure(configure_dir=self._pkg_name)
-            autotools.make()
-            autotools.install()
+            cmake.definitions["RTMIDI_BUILD_SHARED_LIBS"] = False
+
+        cmake.configure(source_dir=self._pkg_name)
+        cmake.build()
 
     def package(self):
         self.copy("*.h", dst="include/rtmidi", excludes="contrib", src=self._pkg_name)
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="lib", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
+        self.copy("*.so*", dst="lib", keep_path=False)
         self.copy("*.dylib", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
         release_libs = [self._libname]
         debug_libs = [self._libname]
+        libs = []
 
         # Note: this must be correctly refined with options added for selecting
         if self.settings.os == "Linux":
-            self.cpp_info.libs = ["asound", "pthread"]
-
-            pkg_config = PkgConfig("jack")
-            for lib in pkg_config.libs_only_l:
-                self.cpp_info.libs.append(lib[2:])
+            libs = ["pthread", "asound", "jack"]
 
         if self.settings.os == "Macos":
             self.cpp_info.exelinkflags.append("-framework CoreMIDI -framework CoreAudio -framework CoreFoundation")
@@ -107,7 +99,10 @@ class RtMidiConan(ConanFile):
         if self._isVisualStudioBuild():
             debug_libs = ["{}d".format(self._libname)]
             if not self.options.shared:
-                self.cpp_info.libs = ["winmm"]
+                libs = ["winmm"]
+
+        release_libs.extend(libs)
+        debug_libs.extend(libs)
 
         self.cpp_info.release.libs = release_libs
         self.cpp_info.debug.libs = debug_libs
@@ -129,6 +124,10 @@ class RtMidiConan(ConanFile):
                               '''{}
 include(${{CMAKE_BINARY_DIR}}/conanbuildinfo.cmake)
 conan_basic_setup()'''.format(cmake_project_line))
+
+        self.output.warn("remove -Werror flag for Debug builds with gcc, otherwise x86 builds will fail")
+        tools.replace_in_file(cmake_file, "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -Werror\")",
+            "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")")
 
         if platform.platform().startswith("Windows-2012"):
             self.output.warn("set minimum required CMake version back to 3.7 on {} build server".format(platform.platform()))
