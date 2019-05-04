@@ -129,6 +129,10 @@ conan_basic_setup()'''.format(cmake_project_line))
         tools.replace_in_file(cmake_file, "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -Werror\")",
             "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS}\")")
 
+        if self.settings.os == "Linux":
+            self.output.warn("remove 'jack_port_rename' feature to avoid linker error on not supporting Linux systems")
+            tools.replace_in_file(cmake_file, "list(APPEND API_DEFS \"JACK_HAS_PORT_RENAME\")", "list(APPEND API_DEFS \"\")")
+
         if platform.platform().startswith("Windows-2012"):
             self.output.warn("set minimum required CMake version back to 3.7 on {} build server".format(platform.platform()))
             tools.replace_in_file(cmake_file, "cmake_minimum_required(VERSION 3.10 FATAL_ERROR)",
