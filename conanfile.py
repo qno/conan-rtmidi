@@ -87,14 +87,11 @@ class RtMidiConan(ConanFile):
     def package_info(self):
         release_libs = [self._libname]
         debug_libs = [self._libname]
+        libs = []
 
         # Note: this must be correctly refined with options added for selecting
         if self.settings.os == "Linux":
-            self.cpp_info.libs = ["asound", "pthread"]
-
-            pkg_config = PkgConfig("jack")
-            for lib in pkg_config.libs_only_l:
-                self.cpp_info.libs.append(lib[2:])
+            libs = ["pthread", "asound", "jack"]
 
         if self.settings.os == "Macos":
             self.cpp_info.exelinkflags.append("-framework CoreMIDI -framework CoreAudio -framework CoreFoundation")
@@ -102,7 +99,10 @@ class RtMidiConan(ConanFile):
         if self._isVisualStudioBuild():
             debug_libs = ["{}d".format(self._libname)]
             if not self.options.shared:
-                self.cpp_info.libs = ["winmm"]
+                libs = ["winmm"]
+
+        release_libs.extend(libs)
+        debug_libs.extend(libs)
 
         self.cpp_info.release.libs = release_libs
         self.cpp_info.debug.libs = debug_libs
