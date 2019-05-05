@@ -7,13 +7,20 @@ class RtMidiConan(ConanFile):
     license = "MIT"
     author = "Gary P. Scavone"
     url = "https://github.com/qno/conan-rtmidi"
+    homepage = "https://github.com/thestk/rtmidi"
     description = "A set of C++ classes that provide a common API for realtime MIDI input/output across Linux (ALSA & JACK), Macintosh OS X (CoreMIDI & JACK) and Windows (Multimedia)."
 
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
 
-    options = {"shared": [True, False]}
-    default_options = {"shared": False}
+    options = {
+        "shared": [True, False],
+        "fPIC": [True, False]
+        }
+    default_options = {
+        "shared": False,
+         "fPIC": True
+         }
 
     _pkg_name = "rtmidi-4.0.0"
     _libname = "rtmidi"
@@ -60,6 +67,10 @@ class RtMidiConan(ConanFile):
         # which then leads then to linker errors if recipe e.g. is build with /MT runtime for MS compiler
         # see https://github.com/conan-io/conan/issues/3312
         self._patchCMakeListsFile(self._pkg_name)
+
+    def configure(self):
+        if self._isVisualStudioBuild():
+            del self.options.fPIC
 
     def build(self):
         cmake = CMake(self)
