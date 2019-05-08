@@ -107,10 +107,13 @@ class RtMidiConan(ConanFile):
         if self.settings.os == "Macos":
             self.cpp_info.exelinkflags.append("-framework CoreMIDI -framework CoreAudio -framework CoreFoundation")
 
-        if self._isVisualStudioBuild():
+        if self._isVisualStudioBuild() or self._isMinGWBuild():
             debug_libs = ["{}d".format(self._libname)]
             if not self.options.shared:
                 libs = ["winmm"]
+
+        if self._isMinGWBuild():
+            libs.append("pthread")
 
         release_libs.extend(libs)
         debug_libs.extend(libs)
@@ -120,6 +123,9 @@ class RtMidiConan(ConanFile):
 
     def _isVisualStudioBuild(self):
         return self.settings.os == "Windows" and self.settings.compiler == "Visual Studio"
+
+    def _isMinGWBuild(self):
+        return self.settings.os == "Windows" and self.settings.compiler == "gcc"
 
     def _patchCMakeListsFile(self, src_dir):
         cmake_project_line = ""
