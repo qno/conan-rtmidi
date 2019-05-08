@@ -112,9 +112,6 @@ class RtMidiConan(ConanFile):
             if not self.options.shared:
                 libs = ["winmm"]
 
-        if self._isMinGWBuild():
-            libs.append("pthread")
-
         release_libs.extend(libs)
         debug_libs.extend(libs)
 
