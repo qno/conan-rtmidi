@@ -109,8 +109,7 @@ class RtMidiConan(ConanFile):
 
         if self._isVisualStudioBuild() or self._isMinGWBuild():
             debug_libs = ["{}d".format(self._libname)]
-            if not self.options.shared:
-                libs = ["winmm"]
+            libs = ["winmm"]
 
         release_libs.extend(libs)
         debug_libs.extend(libs)
