@@ -220,3 +220,31 @@ jobs:
           conan user
           python build.py
         displayName: conan create package
+  - job: MinGW
+    pool:
+      vmImage: vs2017-win2016
+    strategy:
+      matrix:
+        GCC 7 Release:
+          MINGW_CONFIGURATIONS: '7@x86_64@seh@posix'
+          CONAN_BUILD_TYPES: Release
+        GCC 7 Debug:
+          MINGW_CONFIGURATIONS: '7@x86_64@seh@posix'
+          CONAN_BUILD_TYPES: Debug
+        GCC 8 Release:
+          MINGW_CONFIGURATIONS: '8@x86_64@seh@posix'
+          CONAN_BUILD_TYPES: Release
+        GCC 8 Debug:
+          MINGW_CONFIGURATIONS: '8@x86_64@seh@posix'
+          CONAN_BUILD_TYPES: Debug
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+         versionSpec: $(python-version)
+      - script: |
+          python -m pip install --upgrade pip
+          python -m pip install $(conan-pkg)
+          python -m pip install $(cpt-pkg) $(bpt-pkg)
+          conan user
+          python build.py
+        displayName: conan create package
