@@ -74,7 +74,7 @@ class RtMidiConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        if self._isVisualStudioBuild():
+        if self._isVisualStudioBuild() or self._isMinGWBuild():
             if self.settings.build_type == "Debug":
                 cmake.definitions["CMAKE_DEBUG_POSTFIX"] = "d"
 
